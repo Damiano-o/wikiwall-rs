@@ -11,7 +11,7 @@ fn main() {
         resource.set("ProductName", "WikiWall");
         resource.set(
             "FileDescription",
-            "Una voce eccellente da Wikipedia, sul tuo desktop" // niente accenti: rc.exe legge il .rc come ANSI,
+            "Una voce eccellente da Wikipedia, sul tuo desktop", // niente accenti: rc.exe legge il .rc come ANSI,
         );
         resource.set(
             "LegalCopyright",
