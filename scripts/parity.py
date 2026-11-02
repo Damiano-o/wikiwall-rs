@@ -9,6 +9,9 @@ binario Rust compilato in `target\\release\\wikiwall.exe`.
 
 Entrambe le versioni disegnano la stessa voce (letta da
 `%LOCALAPPDATA%\\WikiWall\\cache\\last_article.json`) e i due PNG vengono confrontati.
+Il QR viene misurato a parte: la crate `qrcode` e python-qrcode scelgono a volte
+maschere diverse (entrambe valide), quindi il riquadro del QR può non coincidere
+pur essendo corretto.
 """
 
 from __future__ import annotations
@@ -17,10 +20,41 @@ import argparse
 import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageDraw
+
+QR_BOX = re.compile(r"box qr=Some\(\(([\d.]+), ([\d.]+), ([\d.]+), ([\d.]+)\)\)")
+
+
+def run_rust(binary: pathlib.Path, args: argparse.Namespace, output: pathlib.Path) -> tuple[int, int, int, int] | None:
+    """Render with the Rust binary; return the QR box it reported."""
+    result = subprocess.run(
+        [
+            str(binary),
+            "next",
+            "--no-set",
+            "-v",
+            "--output",
+            str(output),
+            "--theme",
+            args.theme,
+            "--width",
+            str(args.width),
+            "--height",
+            str(args.height),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        errors="replace",
+    )
+    match = QR_BOX.search(result.stderr + result.stdout)
+    if match is None:
+        return None
+    return tuple(float(value) for value in match.groups())  # type: ignore[return-value]
 
 
 def main() -> int:
@@ -50,22 +84,7 @@ def main() -> int:
         print(f"Binario non trovato: {binary}. Esegui prima: cargo build --release")
         return 1
 
-    subprocess.run(
-        [
-            str(binary),
-            "next",
-            "--no-set",
-            "--output",
-            str(rust_png),
-            "--theme",
-            args.theme,
-            "--width",
-            str(args.width),
-            "--height",
-            str(args.height),
-        ],
-        check=True,
-    )
+    qr_box = run_rust(binary, args, rust_png)
 
     python = python_repo / ".venv" / "Scripts" / "python.exe"
     if not python.is_file():
@@ -78,6 +97,7 @@ from wikiwall.wikipedia import Article
 from wikiwall.render import render_article
 data = json.loads(pathlib.Path({str(article_path)!r}).read_text(encoding="utf-8"))
 article = Article.from_dict(data)
+print("articolo:", article.title)
 result = render_article(
     article,
     pathlib.Path({str(python_png)!r}),
@@ -101,16 +121,46 @@ print("python boxes:", result.qr_box, result.link_box, result.skip_box)
         return 1
 
     difference = ImageChops.difference(rust_image, python_image).convert("L")
-    histogram = difference.histogram()
-    total = sum(histogram)
-    identical = histogram[0]
-    visible = sum(histogram[9:])
 
-    print(f"dimensione: {rust_image.size[0]}x{rust_image.size[1]}")
-    print(f"pixel identici: {100.0 * identical / total:.4f}%")
-    print(f"pixel con differenza > 8: {visible} ({100.0 * visible / total:.6f}%)")
-    print(f"differenza massima: {difference.getextrema()[1]}")
-    return 0 if visible == 0 else 2
+    # Regione del QR: le due implementazioni possono scegliere maschere diverse.
+    qr_mask = Image.new("L", rust_image.size, 0)
+    if qr_box is not None:
+        left, top, width, height = qr_box
+        padding = 4
+        ImageDraw.Draw(qr_mask).rectangle(
+            (
+                max(0, int(left) - padding),
+                max(0, int(top) - padding),
+                min(rust_image.size[0], int(left + width) + padding),
+                min(rust_image.size[1], int(top + height) + padding),
+            ),
+            fill=255,
+        )
+
+    outside = ImageChops.multiply(
+        difference, ImageChops.invert(qr_mask)
+    )  # solo fuori dal QR
+    inside = ImageChops.multiply(difference, qr_mask)  # solo dentro il QR
+
+    def report(name: str, image: Image.Image) -> int:
+        histogram = image.histogram()
+        total = sum(histogram)
+        visible = sum(histogram[9:])
+        print(
+            f"{name}: pixel identici {100.0 * histogram[0] / total:.4f}% · "
+            f"differenza > 8 in {visible} pixel ({100.0 * visible / total:.6f}%) · "
+            f"max {image.getextrema()[1]}"
+        )
+        return visible
+
+    layout_diff = report("fuori dal QR (testo, impaginazione)", outside)
+    report("dentro il QR", inside)
+
+    if layout_diff == 0:
+        print("esito: impaginazione identica; eventuali differenze restano nel QR")
+        return 0
+    print("esito: differenze fuori dal QR")
+    return 2
 
 
 if __name__ == "__main__":

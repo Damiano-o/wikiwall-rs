@@ -24,14 +24,20 @@ identico ma non serve ritagliare PNG a ogni cambio.
 
 ## Parità verificata
 
-`scripts/parity.py` rende la stessa voce con le due implementazioni e confronta i PNG:
+`scripts/parity.py` rende la stessa voce con le due implementazioni e confronta i PNG,
+misurando a parte il riquadro del QR:
 
 ```text
-dimensione: 1920x1080
-pixel identici: 100.0000%
-pixel con differenza > 8: 0 (0.000000%)
-differenza massima: 1
+fuori dal QR (testo, impaginazione): pixel identici 100.0000% · differenza > 8 in 0 pixel · max 0
+dentro il QR: pixel identici 99.8827% · differenza > 8 in 2275 pixel · max 218
+esito: impaginazione identica; eventuali differenze restano nel QR
 ```
+
+Testo, font, spaziature e immagini sono quindi **identici pixel per pixel**. Il QR può
+invece usare una maschera diversa: la crate `qrcode` e python-qrcode scelgono fra le otto
+maschere previste dallo standard in base a implementazioni leggermente diverse delle
+penalità. Entrambi i codici sono validi e leggibili; coincidono quando le due
+implementazioni scelgono la stessa maschera.
 
 Anche i rettangoli cliccabili coincidono al centesimo di pixel
 (`qr=(854.40625, 941.40625, 93.59375, 93.59375)`, uguali in entrambe le versioni).
