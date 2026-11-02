@@ -41,7 +41,11 @@ fn open_log() -> Option<std::fs::File> {
 }
 
 fn with_suffix(path: &std::path::Path, index: usize) -> std::path::PathBuf {
-    let mut name = path.file_name().and_then(|n| n.to_str()).unwrap_or("log").to_string();
+    let mut name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("log")
+        .to_string();
     name.push_str(&format!(".{index}"));
     path.with_file_name(name)
 }

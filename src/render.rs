@@ -154,7 +154,12 @@ impl Cdp {
         Err(RenderError(format!("CDP {method}: nessuna risposta")))
     }
 
-    fn evaluate(&mut self, session: &str, expression: &str, await_promise: bool) -> Result<Value, RenderError> {
+    fn evaluate(
+        &mut self,
+        session: &str,
+        expression: &str,
+        await_promise: bool,
+    ) -> Result<Value, RenderError> {
         let result = self.call(
             "Runtime.evaluate",
             json!({
@@ -211,10 +216,7 @@ fn wait_for_websocket(port: u16) -> Result<String, RenderError> {
         match client.get(&url).send() {
             Ok(response) => match response.json::<Value>() {
                 Ok(value) => {
-                    if let Some(ws) = value
-                        .get("webSocketDebuggerUrl")
-                        .and_then(|v| v.as_str())
-                    {
+                    if let Some(ws) = value.get("webSocketDebuggerUrl").and_then(|v| v.as_str()) {
                         return Ok(ws.to_string());
                     }
                     last = "webSocketDebuggerUrl assente".into();

@@ -54,9 +54,8 @@ pub fn hex_color(value: &str) -> (u8, u8, u8) {
     if cleaned.len() < 6 {
         return (0, 0, 0);
     }
-    let parse = |range: std::ops::Range<usize>| {
-        u8::from_str_radix(&cleaned[range], 16).unwrap_or(0)
-    };
+    let parse =
+        |range: std::ops::Range<usize>| u8::from_str_radix(&cleaned[range], 16).unwrap_or(0);
     (parse(0..2), parse(2..4), parse(4..6))
 }
 

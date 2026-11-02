@@ -128,7 +128,9 @@ pub fn save_default_config(path: &Path) -> std::io::Result<PathBuf> {
 }
 
 pub fn load_config(path: Option<&Path>) -> Config {
-    let target = path.map(Path::to_path_buf).unwrap_or_else(crate::paths::config_path);
+    let target = path
+        .map(Path::to_path_buf)
+        .unwrap_or_else(crate::paths::config_path);
     if !target.exists() {
         let _ = save_default_config(&target);
     }
@@ -153,7 +155,9 @@ pub fn save_theme(theme: &str, path: Option<&Path>) -> Result<PathBuf, String> {
     if !THEMES.contains(&name.as_str()) {
         return Err(format!("Tema sconosciuto: {theme}"));
     }
-    let target = path.map(Path::to_path_buf).unwrap_or_else(crate::paths::config_path);
+    let target = path
+        .map(Path::to_path_buf)
+        .unwrap_or_else(crate::paths::config_path);
     if !target.exists() {
         save_default_config(&target).map_err(|e| e.to_string())?;
     }
@@ -215,7 +219,11 @@ mod tests {
         let dir = std::env::temp_dir().join("wikiwall-config-test");
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("config.toml");
-        atomic_write_text(&path, "[wikiwall]\ntheme = \"dark\"\ninterval_minutes = 3\n").unwrap();
+        atomic_write_text(
+            &path,
+            "[wikiwall]\ntheme = \"dark\"\ninterval_minutes = 3\n",
+        )
+        .unwrap();
         let config = load_config(Some(&path));
         assert_eq!(config.theme, "dark");
         assert_eq!(config.interval_minutes, 3);

@@ -15,8 +15,8 @@ mod tray;
 mod util;
 mod wallpaper;
 mod watcher;
-mod win32;
 mod wikipedia;
+mod win32;
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -127,7 +127,10 @@ fn run(cli: Cli) -> Result<i32, String> {
             output,
             no_set,
         } => cmd_next(theme, width, height, output, no_set),
-        Commands::Watch { no_tray, no_overlay } => cmd_watch(no_tray, no_overlay),
+        Commands::Watch {
+            no_tray,
+            no_overlay,
+        } => cmd_watch(no_tray, no_overlay),
         Commands::Install => cmd_install(),
         Commands::Uninstall => cmd_uninstall(),
         Commands::Config { open } => cmd_config(open),

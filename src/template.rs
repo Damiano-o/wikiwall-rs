@@ -111,7 +111,11 @@ pub fn clean_extract(text: &str) -> String {
             parts.push(trimmed);
         }
     }
-    parts.join(" ").split_whitespace().collect::<Vec<_>>().join(" ")
+    parts
+        .join(" ")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 /// Trim an extract at a sentence or word boundary, preserving whole words.
@@ -171,10 +175,7 @@ fn sentence_boundary(text: &str) -> Option<usize> {
         if let Some(active) = quote {
             if ch == active {
                 quote = None;
-            } else if ".!?".contains(ch)
-                && i + 1 < chars.len()
-                && chars[i + 1] == active
-            {
+            } else if ".!?".contains(ch) && i + 1 < chars.len() && chars[i + 1] == active {
                 return Some(i + 2);
             }
             i += 1;
@@ -362,8 +363,7 @@ pub fn build_html(article: &Article, width: u32, height: u32, theme: &str) -> St
     let scale = (width as f64 / 1920.0).min(height as f64 / 1200.0);
 
     let size = title_size(&article.title);
-    let title_style =
-        format!("--title-size: clamp(44px, calc({size}px * var(--s)), {size}px)");
+    let title_style = format!("--title-size: clamp(44px, calc({size}px * var(--s)), {size}px)");
 
     let (mut lead, mut rest) = split_lead(
         &article.extract,
@@ -378,7 +378,9 @@ pub fn build_html(article: &Article, width: u32, height: u32, theme: &str) -> St
             cut = limit_byte;
         }
         let overflow = lead[cut..].trim_matches([' ', ',', ';', ':']).to_string();
-        let kept = lead[..cut].trim_end_matches([' ', ',', ';', ':']).to_string();
+        let kept = lead[..cut]
+            .trim_end_matches([' ', ',', ';', ':'])
+            .to_string();
         lead = format!("{kept}…");
         rest = format!("{overflow} {rest}").trim().to_string();
     }
@@ -424,12 +426,18 @@ pub fn build_html(article: &Article, width: u32, height: u32, theme: &str) -> St
         .next()
         .map(|c| c.to_uppercase().to_string())
         .unwrap_or_default();
-    let hero_letter = format!(r#"<div class="hero-letter">{}</div>"#, html_escape(&initial));
+    let hero_letter = format!(
+        r#"<div class="hero-letter">{}</div>"#,
+        html_escape(&initial)
+    );
 
     let description_html = if article.description.trim().is_empty() {
         String::new()
     } else {
-        format!(r#"<p class="description">{}</p>"#, html_escape(&article.description))
+        format!(
+            r#"<p class="description">{}</p>"#,
+            html_escape(&article.description)
+        )
     };
 
     let first_word = lead.split_whitespace().next().unwrap_or("");
@@ -568,7 +576,12 @@ mod tests {
 
     #[test]
     fn builds_a_cover_with_qr_and_link() {
-        let html = build_html(&article("Prova", "Testo della voce. Altro testo."), 1920, 1080, "dark");
+        let html = build_html(
+            &article("Prova", "Testo della voce. Altro testo."),
+            1920,
+            1080,
+            "dark",
+        );
         assert!(html.contains("data:image/png;base64,"));
         assert!(html.contains("it.wikipedia.org/wiki/Prova"));
         assert!(html.contains("VOCE IN VETRINA"));

@@ -3,8 +3,8 @@
 use std::sync::{Arc, Mutex, OnceLock};
 use std::thread::JoinHandle;
 
-use crate::win32::*;
 use crate::watcher::Watcher;
+use crate::win32::*;
 
 const CLASS_NAME: &str = "WikiWallTray";
 const CALLBACK_MESSAGE: u32 = WM_APP + 1;
@@ -58,13 +58,23 @@ fn show_menu(hwnd: Hwnd) {
         menu_item(menu, MF_STRING, CMD_OPEN, "Apri voce");
         menu_item(
             menu,
-            MF_STRING | if watcher.clickable_qr_flag() { MF_CHECKED } else { MF_UNCHECKED },
+            MF_STRING
+                | if watcher.clickable_qr_flag() {
+                    MF_CHECKED
+                } else {
+                    MF_UNCHECKED
+                },
             CMD_TOGGLE_QR,
             "QR e link cliccabili",
         );
         menu_item(
             menu,
-            MF_STRING | if watcher.paused() { MF_CHECKED } else { MF_UNCHECKED },
+            MF_STRING
+                | if watcher.paused() {
+                    MF_CHECKED
+                } else {
+                    MF_UNCHECKED
+                },
             CMD_PAUSE,
             "Pausa",
         );
@@ -234,7 +244,15 @@ fn make_icon() -> Hicon {
     let radius = 6.0f32;
     for y in 0..SIZE {
         for x in 0..SIZE {
-            let inside = inside_rounded(x as f32, y as f32, 1.0, 1.0, SIZE as f32 - 2.0, SIZE as f32 - 2.0, radius);
+            let inside = inside_rounded(
+                x as f32,
+                y as f32,
+                1.0,
+                1.0,
+                SIZE as f32 - 2.0,
+                SIZE as f32 - 2.0,
+                radius,
+            );
             if !inside {
                 continue;
             }
@@ -312,7 +330,15 @@ fn make_icon() -> Hicon {
     }
 }
 
-fn inside_rounded(x: f32, y: f32, left: f32, top: f32, width: f32, height: f32, radius: f32) -> bool {
+fn inside_rounded(
+    x: f32,
+    y: f32,
+    left: f32,
+    top: f32,
+    width: f32,
+    height: f32,
+    radius: f32,
+) -> bool {
     let right = left + width;
     let bottom = top + height;
     if x < left || x > right || y < top || y > bottom {

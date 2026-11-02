@@ -129,7 +129,10 @@ impl Watcher {
     pub fn toggle_clickable_qr(&self) {
         let enabled = !self.clickable_qr.load(Ordering::SeqCst);
         self.clickable_qr.store(enabled, Ordering::SeqCst);
-        crate::log_info!("QR e link cliccabili: {}", if enabled { "sì" } else { "no" });
+        crate::log_info!(
+            "QR e link cliccabili: {}",
+            if enabled { "sì" } else { "no" }
+        );
     }
 
     pub fn stop(&self) {
@@ -165,7 +168,9 @@ impl Watcher {
             } else if !state.desktop_triggered
                 && state
                     .desktop_since
-                    .map(|since| now.duration_since(since).as_secs_f64() >= self.desktop_hold_seconds)
+                    .map(|since| {
+                        now.duration_since(since).as_secs_f64() >= self.desktop_hold_seconds
+                    })
                     .unwrap_or(false)
                 && since_change >= self.desktop_cooldown_seconds
             {
@@ -236,7 +241,8 @@ impl Watcher {
         }));
 
         if let Ok(mut state) = self.state.lock() {
-            state.last_change = Instant::now() - Duration::from_secs_f64(self.interval_seconds + 1.0);
+            state.last_change =
+                Instant::now() - Duration::from_secs_f64(self.interval_seconds + 1.0);
             state.last_idle = get_idle_seconds();
         }
         crate::log_info!(

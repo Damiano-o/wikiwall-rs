@@ -37,7 +37,12 @@ fn watcher_slot() -> &'static Mutex<Option<Arc<Watcher>>> {
     WATCHER.get_or_init(|| Mutex::new(None))
 }
 
-extern "system" fn hotspot_proc(hwnd: Hwnd, message: u32, w_param: usize, l_param: isize) -> Lresult {
+extern "system" fn hotspot_proc(
+    hwnd: Hwnd,
+    message: u32,
+    w_param: usize,
+    l_param: isize,
+) -> Lresult {
     unsafe {
         match message {
             WM_LBUTTONUP => {

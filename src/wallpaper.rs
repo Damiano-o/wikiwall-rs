@@ -69,11 +69,7 @@ pub fn get_screen_size() -> (u32, u32) {
 }
 
 fn set_wallpaper_fill() {
-    if let Err(message) = set_registry_string(
-        r"Control Panel\Desktop",
-        "WallpaperStyle",
-        "10",
-    ) {
+    if let Err(message) = set_registry_string(r"Control Panel\Desktop", "WallpaperStyle", "10") {
         log_warn!("Impossibile impostare lo stile dello sfondo: {message}");
     }
     let _ = set_registry_string(r"Control Panel\Desktop", "TileWallpaper", "0");

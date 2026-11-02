@@ -28,30 +28,28 @@ impl Hotkey {
             let running = Arc::clone(&running);
             std::thread::Builder::new()
                 .name("wikiwall-hotkey".into())
-                .spawn(move || {
-                    unsafe {
-                        thread_id.store(GetCurrentThreadId(), Ordering::SeqCst);
-                        let modifiers = MOD_CONTROL | MOD_ALT | MOD_NOREPEAT;
-                        if RegisterHotKey(0, HOTKEY_ID, modifiers, VK_N) == 0 {
-                            crate::log_warn!(
-                                "Ctrl+Alt+N non disponibile: un'altra applicazione lo sta usando"
-                            );
-                            thread_id.store(0, Ordering::SeqCst);
-                            return;
-                        }
-                        running.store(1, Ordering::SeqCst);
-                        crate::log_info!("Scorciatoia Ctrl+Alt+N attiva");
-
-                        let mut message: Msg = std::mem::zeroed();
-                        while GetMessageW(&mut message, 0, 0, 0) > 0 {
-                            if message.message == WM_HOTKEY && message.w_param as i32 == HOTKEY_ID {
-                                callback();
-                            }
-                        }
-                        UnregisterHotKey(0, HOTKEY_ID);
-                        running.store(0, Ordering::SeqCst);
+                .spawn(move || unsafe {
+                    thread_id.store(GetCurrentThreadId(), Ordering::SeqCst);
+                    let modifiers = MOD_CONTROL | MOD_ALT | MOD_NOREPEAT;
+                    if RegisterHotKey(0, HOTKEY_ID, modifiers, VK_N) == 0 {
+                        crate::log_warn!(
+                            "Ctrl+Alt+N non disponibile: un'altra applicazione lo sta usando"
+                        );
                         thread_id.store(0, Ordering::SeqCst);
+                        return;
                     }
+                    running.store(1, Ordering::SeqCst);
+                    crate::log_info!("Scorciatoia Ctrl+Alt+N attiva");
+
+                    let mut message: Msg = std::mem::zeroed();
+                    while GetMessageW(&mut message, 0, 0, 0) > 0 {
+                        if message.message == WM_HOTKEY && message.w_param as i32 == HOTKEY_ID {
+                            callback();
+                        }
+                    }
+                    UnregisterHotKey(0, HOTKEY_ID);
+                    running.store(0, Ordering::SeqCst);
+                    thread_id.store(0, Ordering::SeqCst);
                 })
                 .ok()
         };

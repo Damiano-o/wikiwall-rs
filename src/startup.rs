@@ -30,7 +30,10 @@ fn vbs_content(executable: &Path, working_dir: &Path) -> String {
 }
 
 /// Write the launcher as UTF-16 (with BOM), which Windows Script Host reads reliably.
-pub fn install_startup(executable: Option<&Path>, working_dir: Option<&Path>) -> Result<PathBuf, String> {
+pub fn install_startup(
+    executable: Option<&Path>,
+    working_dir: Option<&Path>,
+) -> Result<PathBuf, String> {
     let destination = startup_path()?;
     if let Some(parent) = destination.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -81,8 +84,13 @@ mod tests {
 
     #[test]
     fn writes_a_quoted_launcher() {
-        let text = vbs_content(Path::new(r"C:\tools\wikiwall.exe"), Path::new(r"C:\Users\me"));
-        assert!(text.contains("shell.Run Chr(34) & \"C:\\tools\\wikiwall.exe\" & Chr(34) & \" watch\""));
+        let text = vbs_content(
+            Path::new(r"C:\tools\wikiwall.exe"),
+            Path::new(r"C:\Users\me"),
+        );
+        assert!(
+            text.contains("shell.Run Chr(34) & \"C:\\tools\\wikiwall.exe\" & Chr(34) & \" watch\"")
+        );
         assert!(text.contains("shell.CurrentDirectory = \"C:\\Users\\me\""));
     }
 }

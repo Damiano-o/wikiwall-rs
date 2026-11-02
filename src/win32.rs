@@ -241,7 +241,13 @@ extern "system" {
         section: Handle,
         offset: u32,
     ) -> Hbitmap;
-    pub fn CreateBitmap(width: i32, height: i32, planes: u32, bits: u32, data: *const std::ffi::c_void) -> Hbitmap;
+    pub fn CreateBitmap(
+        width: i32,
+        height: i32,
+        planes: u32,
+        bits: u32,
+        data: *const std::ffi::c_void,
+    ) -> Hbitmap;
     pub fn DeleteObject(object: isize) -> i32;
     pub fn SelectObject(dc: Hdc, object: isize) -> isize;
 }

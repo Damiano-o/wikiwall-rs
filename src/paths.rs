@@ -5,7 +5,9 @@ use std::path::{Path, PathBuf};
 pub const APP_NAME: &str = "WikiWall";
 
 fn env_path(key: &str) -> Option<PathBuf> {
-    std::env::var_os(key).filter(|v| !v.is_empty()).map(PathBuf::from)
+    std::env::var_os(key)
+        .filter(|v| !v.is_empty())
+        .map(PathBuf::from)
 }
 
 fn base_dir() -> PathBuf {
@@ -62,7 +64,9 @@ pub fn atomic_write_text(path: &Path, text: &str) -> std::io::Result<()> {
     let suffix = std::process::id();
     tmp.set_file_name(format!(
         "{}.{suffix}.tmp",
-        path.file_name().and_then(|n| n.to_str()).unwrap_or("wikiwall")
+        path.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("wikiwall")
     ));
     std::fs::write(&tmp, text.as_bytes())?;
     match std::fs::rename(&tmp, path) {

@@ -61,7 +61,6 @@ impl History {
     pub fn clear(&self) {
         let _ = std::fs::remove_file(&self.path);
     }
-
 }
 
 #[cfg(test)]

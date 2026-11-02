@@ -183,11 +183,7 @@ impl WikipediaClient {
     fn api_get(&self, params: &[(&str, &str)]) -> Result<serde_json::Value, WikipediaError> {
         let mut last_error = String::from("errore sconosciuto");
         for attempt in 0..3 {
-            let response = self
-                .client
-                .get(&self.api_url)
-                .query(params)
-                .send();
+            let response = self.client.get(&self.api_url).query(params).send();
 
             let response = match response {
                 Ok(response) => response,
@@ -243,10 +239,7 @@ impl WikipediaClient {
                 if pair.len() != 2 {
                     return None;
                 }
-                Some((
-                    pair[0].as_str()?.to_string(),
-                    pair[1].as_str()?.to_string(),
-                ))
+                Some((pair[0].as_str()?.to_string(), pair[1].as_str()?.to_string()))
             })
             .collect();
         if items.is_empty() {
@@ -378,10 +371,16 @@ impl WikipediaClient {
             .and_then(|pages| pages.as_array());
         let page = match pages.and_then(|pages| pages.first()) {
             Some(page) => page,
-            None => return Err(WikipediaError::NotFound(format!("Voce non trovata: {title}"))),
+            None => {
+                return Err(WikipediaError::NotFound(format!(
+                    "Voce non trovata: {title}"
+                )))
+            }
         };
         if page.get("missing").is_some() || page.get("invalid").is_some() {
-            return Err(WikipediaError::NotFound(format!("Voce non trovata: {title}")));
+            return Err(WikipediaError::NotFound(format!(
+                "Voce non trovata: {title}"
+            )));
         }
 
         let extract = page
@@ -391,7 +390,9 @@ impl WikipediaClient {
             .trim()
             .to_string();
         if extract.is_empty() {
-            return Err(WikipediaError::NotFound(format!("Nessun estratto per {title}")));
+            return Err(WikipediaError::NotFound(format!(
+                "Nessun estratto per {title}"
+            )));
         }
 
         let image_url = page
